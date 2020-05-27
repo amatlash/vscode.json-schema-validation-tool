@@ -1,5 +1,6 @@
 {
 	"name": "json-schema-validation-tool",
+	"publisher": "amatlash",
 	"displayName": "JSON Schema validation tool",
 	"description": "",
 	"version": "0.0.1",

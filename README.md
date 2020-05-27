@@ -1,6 +1,5 @@
 # json-schema-validation-tool README
 
-This is the README for your extension "json-schema-validation-tool". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 
