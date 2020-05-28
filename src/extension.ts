@@ -62,12 +62,11 @@ const resolveSchemaRefs = async (schemaDoc: vscode.TextDocument) => {
 		return samePathArray.join(Path.sep);
 	};
 	const ajv = new AJV({
+		format: false,
 		loadSchema: (uri: string): PromiseLike<boolean | object> => {
-			console.log('uri:', uri);
 			const path = uri.split(Path.sep).slice(0,-1).join(Path.sep);
 			const name = uri.split(Path.sep).pop();
 			let filePath = getFilePath(schemaDoc.fileName, schemaObj.$id, uri);
-			console.log('filePath:', filePath);
 			if (filePath) {
 				// тут хзы
 				if (!filePath.endsWith('.json')) {
