@@ -35,18 +35,54 @@ const resolveSchemaRefs = (schemaDoc) => __awaiter(void 0, void 0, void 0, funct
     catch (e) {
         throw new Error(`Файл "${schemaDoc.fileName.split(Path.sep).pop()}" не является валидным JSON `);
     }
+    const getFilePath = (mainPath, mainID, adID) => {
+        const mainPathArray = mainPath.split(Path.sep);
+        const mainIDArray = mainID.split('/');
+        const adIDArray = adID.split('/');
+        const mainIDPaths = mainIDArray.reduce((result, fileName, index) => {
+            if (result.same.length === index) {
+                if (fileName === adIDArray[index]) {
+                    result.same.push(fileName);
+                    return result;
+                }
+            }
+            result.specific.push(fileName);
+            return result;
+        }, {
+            same: [],
+            specific: []
+        });
+        const adIDPaths = adIDArray.reduce((result, fileName, index) => {
+            if (result.same.length === index) {
+                if (fileName === mainIDArray[index]) {
+                    result.same.push(fileName);
+                    return result;
+                }
+            }
+            result.specific.push(fileName);
+            return result;
+        }, {
+            same: [],
+            specific: []
+        });
+        const samePathArray = mainPathArray.map(path => path);
+        samePathArray.splice(mainPathArray.length - mainIDPaths.specific.length, mainIDPaths.specific.length, ...adIDPaths.specific);
+        return samePathArray.join(Path.sep);
+    };
     const ajv = new AJV({
         loadSchema: (uri) => {
+            console.log('uri:', uri);
             const path = uri.split(Path.sep).slice(0, -1).join(Path.sep);
             const name = uri.split(Path.sep).pop();
-            if (schemaObj.$id.includes(path)) {
-                let refFilePath = schemaDoc.fileName.split(Path.sep).slice(0, -1).join(Path.sep) + Path.sep + name;
+            let filePath = getFilePath(schemaDoc.fileName, schemaObj.$id, uri);
+            console.log('filePath:', filePath);
+            if (filePath) {
                 // тут хзы
-                if (!refFilePath.endsWith('.json')) {
-                    refFilePath += '.json';
+                if (!filePath.endsWith('.json')) {
+                    filePath += '.json';
                 }
                 return new Promise((resolve, reject) => {
-                    vscode.workspace.openTextDocument(refFilePath)
+                    vscode.workspace.openTextDocument(filePath)
                         .then((dataDoc) => {
                         const text = dataDoc.getText();
                         let subschema;
@@ -62,6 +98,9 @@ const resolveSchemaRefs = (schemaDoc) => __awaiter(void 0, void 0, void 0, funct
                         resolve(subschema);
                     });
                 });
+            }
+            else {
+                throw new Error(`Не нашел: ${uri}`);
             }
             return new Promise(() => { });
         }
